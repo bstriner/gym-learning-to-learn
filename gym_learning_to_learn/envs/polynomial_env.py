@@ -27,9 +27,9 @@ class PolynomialEnv(BaseEnv):
         self.data_train, self.data_val, self.data_test = polynomial.load_data()
         input_dim = self.data_train[0].shape[1]
         x = Input((input_dim,))
-        h = Dense(256, activation='tanh')(h)
-        h = Dense(256, activation='tanh')(h)
-        h = Dense(256, activation='tanh')(h)
+        h = Dense(32, activation='tanh')(x)
+        h = Dense(32, activation='tanh')(h)
+        h = Dense(32, activation='tanh')(h)
         y = Dense(self.output_dim)(h)
         self.model = Model(x, y)
         self.create_optimizer()

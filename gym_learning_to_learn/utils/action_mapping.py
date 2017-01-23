@@ -30,7 +30,8 @@ class ActionMappingContinuous(ActionMapping):
 class ActionMappingDiscrete(ActionMapping):
     def __init__(self, k, get_params, scale=0.05):
         self.scale = scale
-        action_space = DiscreteToMultiDiscrete(MultiDiscrete([3 for _ in range(k)]), 'all')
+        space = MultiDiscrete([[0, 2] for _ in range(k)])
+        action_space = DiscreteToMultiDiscrete(space, 'all')
         ActionMapping.__init__(self, k, get_params, action_space)
 
     def step(self, optimizer, action):
@@ -47,3 +48,4 @@ class ActionMappingDiscrete(ActionMapping):
                 raise ValueError("Invalid action: {}".format(act))
             p = K.get_value(param)
             K.set_value(param, p * scale)
+            #print("LR update: {} -> {}".format(p, p * scale))

@@ -13,5 +13,6 @@ def load_data(n_train=1000, n_val=100, n_test=100):
         if power > 0:
             coeffs = np.random.random((power,))
             for j, c in enumerate(coeffs):
-                y += c * np.power(x[:, i], j)
+                d = c * np.power(x[:, i], j)
+                y += d.reshape((-1, 1))
     return split_dataset(x, y, n_train, n_val, n_test)

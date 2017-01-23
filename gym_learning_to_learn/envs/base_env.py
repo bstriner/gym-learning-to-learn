@@ -28,6 +28,8 @@ class BaseEnv(Env):
         self.action_space = action_mapping.action_space
         bounds = float('inf')
         self.observation_space = spaces.Box(-bounds, bounds, (4,))
+        self.viewer = None
+        self.best = None
         Env.__init__(self)
 
     def _seed(self, seed=None):
@@ -41,32 +43,38 @@ class BaseEnv(Env):
         pass
 
     def _step(self, action):
-        scale = np.exp(action)
-        lr = self.optimizer.lr
-        lr_t = K.get_value(lr)
-        K.set_value(lr, lr_t * scale)
+        self.action_mapping.step(self.optimizer, action)
         loss_before = self.losses(self.data_test)
+        if self.best is None:
+            self.best = loss_before
         self.model.fit(self.data_train[0], self.data_train[1],
                        validation_data=(self.data_val[0], self.data_val[1]),
                        nb_epoch=1, verbose=0, batch_size=self.batch_size)
         loss_after = self.losses(self.data_test)
+        self.current_step += 1
         observation = self._observation()
-        reward = (loss_before - loss_after) / loss_before
+
+        reward = (self.best - loss_after)
+        if loss_after < self.best:
+            self.best = loss_after
         done = self.current_step > self.max_steps
+        # print("Step: {}".format(observation))
         return observation, reward, done, {}
 
     def losses(self, data):
-        return self.model.evaluate(data[0], data[1], verbose=0, batch_size=self.batch_size)
+        loss = self.model.evaluate(data[0], data[1], verbose=0, batch_size=self.batch_size)
+        return loss
 
     def _observation(self):
         loss_train = self.losses(self.data_train)
         loss_val = self.losses(self.data_val)
         lr = K.get_value(self.optimizer.lr)
-        return np.array([loss_train, loss_val, lr, self.current_step])
+        return np.array([loss_train, loss_val, -np.log(lr), self.current_step])
 
     def _reset(self):
         self.create_model()
         self.current_step = 0
+        self.best = None
         observation = self._observation()
         return observation
 
