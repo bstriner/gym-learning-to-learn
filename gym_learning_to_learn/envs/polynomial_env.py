@@ -19,7 +19,7 @@ class PolynomialEnv(BaseEnv):
     def __init__(self, action_mapping):
         self.output_dim = 1
         self.batch_size = 32
-        self.max_steps = 100
+        self.max_steps = 50
         self.data_train, self.data_val, self.data_test = None, None, None
         BaseEnv.__init__(self, action_mapping=action_mapping)
 

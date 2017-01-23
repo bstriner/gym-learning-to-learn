@@ -54,7 +54,8 @@ class BaseEnv(Env):
         self.current_step += 1
         observation = self._observation()
 
-        reward = (self.best - loss_after)
+        #reward = (self.best - loss_after)
+        reward = (1.0/loss_after)
         if loss_after < self.best:
             self.best = loss_after
         done = self.current_step > self.max_steps
