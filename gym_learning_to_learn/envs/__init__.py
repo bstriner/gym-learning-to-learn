@@ -1,0 +1,5 @@
+from mnist_env import MnistEnv
+from mnist_sgd_discrete_env import MnistSgdDiscreteEnv
+from mnist_sgd_continuous_env import MnistSgdContinuousEnv
+from polynomial_env import PolynomialEnv
+from polynomial_sgd_discrete_env import PolynomialSgdDiscreteEnv
