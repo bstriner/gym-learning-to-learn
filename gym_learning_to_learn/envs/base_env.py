@@ -15,7 +15,7 @@ from ..datasets import mnist
 
 
 class BaseEnv(Env):
-    metadata = {'render.modes': ['human', 'rgb_array']}
+    metadata = {'render.modes': ['human', 'ansi']}
 
     def __init__(self, action_mapping):
         self._seed()
@@ -54,8 +54,8 @@ class BaseEnv(Env):
         self.current_step += 1
         observation = self._observation()
 
-        #reward = (self.best - loss_after)
-        reward = (1.0/loss_after)
+        # reward = (self.best - loss_after)
+        reward = (1.0 / loss_after)
         if loss_after < self.best:
             self.best = loss_after
         done = self.current_step > self.max_steps
@@ -72,6 +72,9 @@ class BaseEnv(Env):
         lr = K.get_value(self.optimizer.lr)
         return np.array([loss_train, loss_val, -np.log(lr), self.current_step])
 
+    def observation_names(self):
+        return ["loss_train", "loss_val", "nl_lr", "step"]
+
     def _reset(self):
         self.create_model()
         self.current_step = 0
@@ -87,5 +90,7 @@ class BaseEnv(Env):
             return
         if mode == 'human':
             print(self._observation())
+        elif mode == "ansi":
+            return "Observation: {}\n".format(self._observation())
         else:
             raise NotImplementedError("mode not supported: {}".format(mode))

@@ -19,9 +19,9 @@ from ..utils.action_mapping import ActionMappingDiscrete
 
 class PolynomialSgdDiscreteEnv(PolynomialEnv):
     def __init__(self):
-        action_mapping = ActionMappingDiscrete(1, lambda opt: (opt.lr,), scale=0.02)
+        action_mapping = ActionMappingDiscrete(1, lambda opt: (opt.lr,), scale=0.1)
         PolynomialEnv.__init__(self, action_mapping=action_mapping)
 
     def create_optimizer(self):
-        lr = 1e-3
+        lr = 1e-2
         self.optimizer = SGD(lr=lr)
