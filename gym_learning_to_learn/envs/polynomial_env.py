@@ -13,7 +13,7 @@ from keras.optimizers import SGD
 import keras.backend as K
 from ..datasets import polynomial
 from .base_env import BaseEnv
-
+from keras.regularizers import l1l2
 
 class PolynomialEnv(BaseEnv):
     def __init__(self, action_mapping):
@@ -27,10 +27,11 @@ class PolynomialEnv(BaseEnv):
         self.data_train, self.data_val, self.data_test = polynomial.load_data()
         input_dim = self.data_train[0].shape[1]
         x = Input((input_dim,))
-        h = Dense(128, activation='tanh')(x)
-        h = Dense(64, activation='tanh')(h)
-        h = Dense(32, activation='tanh')(h)
-        y = Dense(self.output_dim)(h)
+        reg = lambda: l1l2(1e-7, 1e-7)
+        h = Dense(128, activation='tanh', W_regularizer=reg())(x)
+        h = Dense(64, activation='tanh', W_regularizer=reg())(h)
+        h = Dense(32, activation='tanh', W_regularizer=reg())(h)
+        y = Dense(self.output_dim, W_regularizer=reg())(h)
         self.model = Model(x, y)
         self.create_optimizer()
         self.model.compile(self.optimizer, 'mean_squared_error')

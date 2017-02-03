@@ -47,5 +47,7 @@ class ActionMappingDiscrete(ActionMapping):
             else:
                 raise ValueError("Invalid action: {}".format(act))
             p = K.get_value(param)
-            K.set_value(param, p * scale)
+            #if p > 0.01:
+            #    p = 0.01
+            K.set_value(param, np.float32(p * scale))
             #print("LR update: {} -> {}".format(p, p * scale))

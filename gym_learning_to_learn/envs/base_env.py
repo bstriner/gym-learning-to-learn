@@ -53,10 +53,15 @@ class BaseEnv(Env):
         loss_after = self.losses(self.data_test)
         self.current_step += 1
         observation = self._observation()
-
+        if not np.all(np.isfinite(observation)):
+            print("Episode terminated due to NaN loss: {}".format(observation))
+            observation[0] = -1
+            observation[1] = -1
+            reward = np.float32(-100)
+            return observation, reward, True, {}
         # reward = (self.best - loss_after)
-        eps = 1e-6
-        reward = np.float32((1.0 / (eps+loss_after)))
+        eps = 1e-8
+        reward = np.float32((1.0 / (eps + loss_after)))
         assert np.all(np.isfinite(reward))
         if loss_after < self.best:
             self.best = loss_after
@@ -74,7 +79,7 @@ class BaseEnv(Env):
         lr = K.get_value(self.optimizer.lr)
         nllr = -np.log(lr)
         ret = np.array([loss_train, loss_val, nllr, self.current_step])
-        assert np.all(np.isfinite(ret)), "Lr: {}, Inf: {}".format(lr, ret)
+        # assert np.all(np.isfinite(ret)), "Lr: {}, Inf: {}".format(lr, ret)
         return ret
 
     def observation_names(self):
