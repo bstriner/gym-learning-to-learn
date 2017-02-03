@@ -55,7 +55,9 @@ class BaseEnv(Env):
         observation = self._observation()
 
         # reward = (self.best - loss_after)
-        reward = (1.0 / loss_after)
+        eps = 1e-6
+        reward = np.float32((1.0 / (eps+loss_after)))
+        assert np.all(np.isfinite(reward))
         if loss_after < self.best:
             self.best = loss_after
         done = self.current_step > self.max_steps
@@ -70,7 +72,10 @@ class BaseEnv(Env):
         loss_train = self.losses(self.data_train)
         loss_val = self.losses(self.data_val)
         lr = K.get_value(self.optimizer.lr)
-        return np.array([loss_train, loss_val, -np.log(lr), self.current_step])
+        nllr = -np.log(lr)
+        ret = np.array([loss_train, loss_val, nllr, self.current_step])
+        assert np.all(np.isfinite(ret)), "Lr: {}, Inf: {}".format(lr, ret)
+        return ret
 
     def observation_names(self):
         return ["loss_train", "loss_val", "nl_lr", "step"]

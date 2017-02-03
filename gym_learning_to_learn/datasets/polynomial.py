@@ -18,4 +18,6 @@ def load_data(n_train=32*5, n_val=32, n_test=32):
     noise_val = np.random.uniform(0, 1) * 1e-3
     noise = np.random.random((total_n, 1))*noise_val
     y += noise
+    assert np.all(np.isfinite(x))
+    assert np.all(np.isfinite(y))
     return split_dataset(x, y, n_train, n_val, n_test)
