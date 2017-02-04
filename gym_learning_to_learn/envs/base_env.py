@@ -19,6 +19,7 @@ class BaseEnv(Env):
 
     def __init__(self, action_mapping):
         self._seed()
+        self.verbose = 0
         self.viewer = None
         self.batch_size = 32
         self.optimizer = None
@@ -49,21 +50,22 @@ class BaseEnv(Env):
             self.best = loss_before
         self.model.fit(self.data_train[0], self.data_train[1],
                        validation_data=(self.data_val[0], self.data_val[1]),
-                       nb_epoch=1, verbose=0, batch_size=self.batch_size)
+                       nb_epoch=1, verbose=self.verbose, batch_size=self.batch_size)
         loss_after = self.losses(self.data_test)
         self.current_step += 1
         observation = self._observation()
-        if (loss_after > 1e20) or (not np.all(np.isfinite(observation))):
+        if (loss_after > 1e10) or (not np.all(np.isfinite(observation))):
             print("Episode terminated due to NaN loss: {}, {}".format(loss_after, observation))
             observation[0] = -1
             observation[1] = -1
-            reward = np.float32(-100)
+            reward = np.float32(-1000)
             return observation, reward, True, {}
         # reward = (self.best - loss_after)
         eps = 1e-8
         #reward = np.float32((1.0 / (eps + loss_after)))
-        reward = -np.log(eps+loss_after)
-        print("LR: {}, Reward: {}, Loss: {}".format(K.get_value(self.optimizer.lr), reward, loss_after))
+        reward = 20-np.log(eps+loss_after)
+        if self.verbose:
+            print("LR: {}, Reward: {}, Loss: {}".format(K.get_value(self.optimizer.lr), reward, loss_after))
         #reward = -loss_after
         assert np.all(np.isfinite(reward))
         if loss_after < self.best:
@@ -73,7 +75,7 @@ class BaseEnv(Env):
         return observation, reward, done, {}
 
     def losses(self, data):
-        loss = self.model.evaluate(data[0], data[1], verbose=0, batch_size=self.batch_size)
+        loss = self.model.evaluate(data[0], data[1], verbose=self.verbose, batch_size=self.batch_size)
         return loss
 
     def _observation(self):

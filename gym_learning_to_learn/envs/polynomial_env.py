@@ -19,7 +19,7 @@ class PolynomialEnv(BaseEnv):
     def __init__(self, action_mapping):
         self.output_dim = 1
         self.batch_size = 32
-        self.max_steps = 200
+        self.max_steps = 500
         self.data_train, self.data_val, self.data_test = None, None, None
         BaseEnv.__init__(self, action_mapping=action_mapping)
 
@@ -30,8 +30,8 @@ class PolynomialEnv(BaseEnv):
         reg = lambda: l1l2(1e-7, 1e-7)
         h = Dense(128, activation='tanh', W_regularizer=reg())(x)
         h = Dense(64, activation='tanh', W_regularizer=reg())(h)
-        h = Dense(32, activation='tanh', W_regularizer=reg())(h)
-        y = Dense(self.output_dim, W_regularizer=reg())(h)
+        #h = Dense(32, activation='tanh', W_regularizer=reg())(h)
+        y = Dense(self.output_dim, activation='sigmoid', W_regularizer=reg())(h)
         self.model = Model(x, y)
         self.create_optimizer()
         self.model.compile(self.optimizer, 'mean_squared_error')
