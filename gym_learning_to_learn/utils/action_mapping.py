@@ -38,12 +38,13 @@ class ActionMappingDiscrete(ActionMapping):
         action = self.action_space(action)
         params = self.get_params(optimizer)
         for param, act in zip(params, action):
+            mul = 1.0 + self.scale
             if act == 0:
                 scale = 1.0
             elif act == 1:
-                scale = 1.0 - self.scale
+                scale = 1.0/mul
             elif act == 2:
-                scale = 1.0 + self.scale
+                scale = mul
             else:
                 raise ValueError("Invalid action: {}".format(act))
             p = K.get_value(param)
