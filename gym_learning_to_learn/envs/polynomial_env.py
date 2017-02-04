@@ -8,7 +8,7 @@ import sys
 import numpy as np
 import time
 from keras.models import Model
-from keras.layers import Input, Dense, Flatten
+from keras.layers import Input, Dense, Flatten, LeakyReLU
 from keras.optimizers import SGD
 import keras.backend as K
 from ..datasets import polynomial
@@ -28,10 +28,13 @@ class PolynomialEnv(BaseEnv):
         input_dim = self.data_train[0].shape[1]
         x = Input((input_dim,))
         reg = lambda: l1l2(1e-7, 1e-7)
-        h = Dense(128, activation='tanh', W_regularizer=reg())(x)
-        h = Dense(64, activation='tanh', W_regularizer=reg())(h)
-        #h = Dense(32, activation='tanh', W_regularizer=reg())(h)
-        y = Dense(self.output_dim, activation='sigmoid', W_regularizer=reg())(h)
+        h = Dense(128, W_regularizer=reg())(x)
+        h = LeakyReLU(0.2)(h)
+        h = Dense(64, W_regularizer=reg())(h)
+        h = LeakyReLU(0.2)(h)
+        h = Dense(32, W_regularizer=reg())(h)
+        h = LeakyReLU(0.2)(h)
+        y = Dense(self.output_dim, W_regularizer=reg())(h)
         self.model = Model(x, y)
         self.create_optimizer()
         self.model.compile(self.optimizer, 'mean_squared_error')

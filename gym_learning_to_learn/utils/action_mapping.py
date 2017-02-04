@@ -40,15 +40,18 @@ class ActionMappingDiscrete(ActionMapping):
         for param, act in zip(params, action):
             mul = 1.0 + self.scale
             if act == 0:
-                scale = 1.0
-            elif act == 1:
                 scale = 1.0/mul
+            elif act == 1:
+                scale = 1.0
             elif act == 2:
                 scale = mul
             else:
                 raise ValueError("Invalid action: {}".format(act))
             p = K.get_value(param)
+            p = p * scale
+            p = min(p, 1e-1)
+            p = max(p, 1e-9)
             #if p > 0.01:
             #    p = 0.01
-            K.set_value(param, np.float32(p * scale))
+            #K.set_value(param, np.float32(p))
             #print("LR update: {} -> {}".format(p, p * scale))
