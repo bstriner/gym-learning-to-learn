@@ -18,7 +18,11 @@ def load_data(n_train=32 * 50, n_val=32, n_test=32):
             y += d.reshape((-1, 1))
     noise = np.random.normal(0, 1e-4, (total_n, 1))
     y += noise
+    # TODO: normalize y
     #y = 1/(1 + np.exp(-y))
+    sd = np.std(y, axis=None)
+    m = np.mean(y, axis=None)
+    y = (y-m)/sd
     assert np.all(np.isfinite(x))
     assert np.all(np.isfinite(y))
     return split_dataset(x, y, n_train, n_val, n_test)

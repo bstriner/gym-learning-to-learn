@@ -53,5 +53,5 @@ class ActionMappingDiscrete(ActionMapping):
             p = max(p, 1e-9)
             #if p > 0.01:
             #    p = 0.01
-            #K.set_value(param, np.float32(p))
+            K.set_value(param, np.float32(p))
             #print("LR update: {} -> {}".format(p, p * scale))
