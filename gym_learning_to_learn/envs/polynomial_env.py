@@ -1,16 +1,6 @@
-from gym import Env
-from gym import error, spaces, utils
-from gym.utils import seeding
-from gym import spaces
-from string import Template
-import os
-import sys
-import numpy as np
-import time
+
 from keras.models import Model
 from keras.layers import Input, Dense, Flatten, LeakyReLU
-from keras.optimizers import SGD
-import keras.backend as K
 from ..datasets import polynomial
 from .base_env import BaseEnv
 from keras.regularizers import l1l2

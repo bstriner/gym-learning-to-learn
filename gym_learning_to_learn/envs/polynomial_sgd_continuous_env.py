@@ -1,12 +1,11 @@
-
 from keras.optimizers import SGD
 from .polynomial_env import PolynomialEnv
-from ..utils.action_mapping import ActionMappingDiscrete
+from ..utils.action_mapping import ActionMappingContinuous
 
 
-class PolynomialSgdDiscreteEnv(PolynomialEnv):
+class PolynomialSgdContinuousEnv(PolynomialEnv):
     def __init__(self):
-        action_mapping = ActionMappingDiscrete(1, lambda opt: (opt.lr,), limits=[[1e-9, 1e-1]], scale=0.1)
+        action_mapping = ActionMappingContinuous(1, lambda opt: (opt.lr,), limits=[[1e-9, 1e-1]])
         PolynomialEnv.__init__(self, action_mapping=action_mapping)
 
     def create_optimizer(self):

@@ -20,3 +20,10 @@ register(
     tags={'wrapper_config.TimeLimit.max_episode_steps': 1000},
     nondeterministic=True
 )
+
+register(
+    id='SGD-Polynomial-Continuous-v0',
+    entry_point='gym_learning_to_learn.envs:PolynomialSgdContinuousEnv',
+    tags={'wrapper_config.TimeLimit.max_episode_steps': 1000},
+    nondeterministic=True
+)

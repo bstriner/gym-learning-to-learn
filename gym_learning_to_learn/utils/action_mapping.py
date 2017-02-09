@@ -14,33 +14,40 @@ class ActionMapping(object):
 
 
 class ActionMappingContinuous(ActionMapping):
-    def __init__(self, k, get_params):
+    def __init__(self, k, get_params, limits, log_scale=True, scale=1.0):
+        self.limits = limits
+        self.log_scale = log_scale
+        self.scale = scale
         bounds = 50.0
         action_space = Box(-bounds, bounds, (k,))
         ActionMapping.__init__(self, k, get_params, action_space)
 
     def step(self, optimizer, action):
         params = self.get_params(optimizer)
-        for param, act in zip(params, action):
-            scale = np.exp(act)
+        for param, act, limit in zip(params, action, self.limits):
             p = K.get_value(param)
-            K.set_value(param, p * scale)
+            if self.log_scale:
+                pnext = np.clip(np.exp(np.log(p) + (act * self.scale)), limit[0], limit[1])
+            else:
+                pnext = np.clip(p + (act * self.scale), limit[0], limit[1])
+            K.set_value(param, np.float32(pnext))
 
 
 class ActionMappingDiscrete(ActionMapping):
-    def __init__(self, k, get_params, scale=0.05):
+    def __init__(self, k, get_params, limits, scale=0.05):
         self.scale = scale
         space = MultiDiscrete([[0, 2] for _ in range(k)])
         action_space = DiscreteToMultiDiscrete(space, 'all')
+        self.limits = limits
         ActionMapping.__init__(self, k, get_params, action_space)
 
     def step(self, optimizer, action):
         action = self.action_space(action)
         params = self.get_params(optimizer)
-        for param, act in zip(params, action):
+        for param, act, limit in zip(params, action, self.limits):
             mul = 1.0 + self.scale
             if act == 0:
-                scale = 1.0/mul
+                scale = 1.0 / mul
             elif act == 1:
                 scale = 1.0
             elif act == 2:
@@ -48,10 +55,5 @@ class ActionMappingDiscrete(ActionMapping):
             else:
                 raise ValueError("Invalid action: {}".format(act))
             p = K.get_value(param)
-            p = p * scale
-            p = min(p, 1e-1)
-            p = max(p, 1e-9)
-            #if p > 0.01:
-            #    p = 0.01
-            K.set_value(param, np.float32(p))
-            #print("LR update: {} -> {}".format(p, p * scale))
+            pnext = np.clip(p * scale, limit[0], limit[1])
+            K.set_value(param, np.float32(pnext))
