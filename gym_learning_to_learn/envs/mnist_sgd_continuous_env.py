@@ -6,7 +6,7 @@ from ..utils.action_mapping import ActionMappingContinuous
 
 class MnistSgdContinuousEnv(MnistEnv):
     def __init__(self):
-        action_mapping = ActionMappingContinuous(1, lambda opt: (opt.lr,))
+        action_mapping = ActionMappingContinuous(1, lambda opt: (opt.lr,), limits=[[1e-9, 1e-1]])
         MnistEnv.__init__(self, action_mapping=action_mapping)
 
     def create_optimizer(self):

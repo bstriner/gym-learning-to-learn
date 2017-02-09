@@ -1,4 +1,3 @@
-
 from keras.models import Model
 from keras.layers import Input, Dense, Flatten
 from keras.optimizers import SGD
@@ -15,10 +14,6 @@ class MnistEnv(BaseEnv):
         self.max_steps = 100
         BaseEnv.__init__(self, action_mapping=action_mapping)
 
-    def create_optimizer(self):
-        self.optimizer = SGD(lr=lr)
-
-
     def create_model(self):
         x = Input(self.input_shape)
         h = Flatten()(x)
@@ -26,8 +21,6 @@ class MnistEnv(BaseEnv):
         h = Dense(128, activation='tanh')(h)
         y = Dense(self.output_dim, activation='softmax')(h)
         self.model = Model(x, y)
-        lr = 1e-3
         self.create_optimizer()
         self.model.compile(self.optimizer, 'categorical_crossentropy')
         self.current_step = 0
-
