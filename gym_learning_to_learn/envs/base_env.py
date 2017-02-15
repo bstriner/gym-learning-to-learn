@@ -22,6 +22,7 @@ class BaseEnv(Env):
         self.observation_space = spaces.Box(-bounds, bounds, (4,))
         self.viewer = None
         self.best = None
+        self.evaluate_test = False
         Env.__init__(self)
 
     def _seed(self, seed=None):
@@ -34,15 +35,18 @@ class BaseEnv(Env):
     def create_optimizer(self):
         pass
 
+    def loss_scale(self, loss):
+        return -np.log(loss)
+
     def _step(self, action):
         self.action_mapping.step(self.optimizer, action)
-        loss_before = self.losses(self.data_test)
+        loss_before = self.losses(self.data_val)
         if self.best is None:
             self.best = loss_before
         self.model.fit(self.data_train[0], self.data_train[1],
                        validation_data=(self.data_val[0], self.data_val[1]),
                        nb_epoch=1, verbose=self.verbose, batch_size=self.batch_size)
-        loss_after = self.losses(self.data_test)
+        loss_after = self.losses(self.data_val)
         self.current_step += 1
         observation = self._observation()
         if (loss_after > 1e10) or (not np.all(np.isfinite(observation))):
@@ -54,9 +58,9 @@ class BaseEnv(Env):
             reward = np.float32(-10000)
             return observation, reward, True, {}
         # reward = (self.best - loss_after)
-        eps = 1e-8
+        # eps = 1e-8
         # reward = np.float32((1.0 / (eps + loss_after)))
-        reward = -np.log(eps + loss_after)
+        reward = self.loss_scale(loss_after)
         if self.verbose:
             print("LR: {}, Reward: {}, Loss: {}".format(K.get_value(self.optimizer.lr), reward, loss_after))
         # reward = -loss_after
@@ -65,19 +69,25 @@ class BaseEnv(Env):
             self.best = loss_after
         done = self.current_step > self.max_steps
         # print("Step: {}".format(observation))
-        return observation, reward, done, {}
+        info = {}
+        if self.evaluate_test:
+            info["test_loss"] = self.losses(self.data_test)
+        return observation, reward, done, info
+
+    def set_evaluate_test(self, evaluate_test):
+        self.evaluate_test = evaluate_test
 
     def losses(self, data):
         loss = self.model.evaluate(data[0], data[1], verbose=self.verbose, batch_size=self.batch_size)
         return loss
 
     def _observation(self):
-        loss_train = self.losses(self.data_train)
-        loss_val = self.losses(self.data_val)
+        # eps = 1e-8
+        loss_train = self.loss_scale(self.losses(self.data_train))
+        loss_val = self.loss_scale(self.losses(self.data_val))
         lr = K.get_value(self.optimizer.lr)
-        eps = 1e-8
         nllr = -np.log(lr)
-        ret = np.array([np.log(loss_train + eps), np.log(loss_val + eps), nllr, self.current_step])
+        ret = np.array([loss_train, loss_val, nllr, self.current_step])
         # assert np.all(np.isfinite(ret)), "Lr: {}, Inf: {}".format(lr, ret)
         return ret
 
