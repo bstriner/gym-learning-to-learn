@@ -14,7 +14,7 @@ class ActionMapping(object):
 
 
 class ActionMappingContinuous(ActionMapping):
-    def __init__(self, k, get_params, limits, log_scale=True, scale=1.0):
+    def __init__(self, k, get_params, limits, log_scale=True, scale=1e-2):
         self.limits = limits
         self.log_scale = log_scale
         self.scale = scale
@@ -27,9 +27,12 @@ class ActionMappingContinuous(ActionMapping):
         for param, act, limit in zip(params, action, self.limits):
             p = K.get_value(param)
             if self.log_scale:
-                pnext = np.clip(np.exp(np.log(p) + (act * self.scale)), limit[0], limit[1])
+                pnext = np.exp(np.log(p) + (act * self.scale))
             else:
-                pnext = np.clip(p + (act * self.scale), limit[0], limit[1])
+                pnext = p + (act * self.scale)
+            pnext = np.float32(np.clip(pnext, limit[0], limit[1]))
+            if not np.all(np.isfinite(pnext)):
+                raise ValueError("Not finite param: {}->{}, action: {}".format(p, pnext, act))
             K.set_value(param, np.float32(pnext))
 
 
@@ -55,5 +58,7 @@ class ActionMappingDiscrete(ActionMapping):
             else:
                 raise ValueError("Invalid action: {}".format(act))
             p = K.get_value(param)
-            pnext = np.clip(p * scale, limit[0], limit[1])
-            K.set_value(param, np.float32(pnext))
+            pnext = np.float32(np.clip(p * scale, limit[0], limit[1]))
+            if not np.all(np.isfinite(pnext)):
+                raise ValueError("Not finite param: {}->{}, action: {}".format(p, pnext, act))
+            K.set_value(param, pnext)
