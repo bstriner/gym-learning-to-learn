@@ -14,7 +14,7 @@ class ActionMapping(object):
 
 
 class ActionMappingContinuous(ActionMapping):
-    def __init__(self, k, get_params, limits, log_scale=True, scale=1e-2):
+    def __init__(self, k, get_params, limits, log_scale=True, scale=1e-1):
         self.limits = limits
         self.log_scale = log_scale
         self.scale = scale
