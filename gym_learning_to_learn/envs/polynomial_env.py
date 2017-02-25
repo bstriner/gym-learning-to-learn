@@ -20,7 +20,7 @@ class PolynomialEnv(BaseEnv):
         input_dim = self.data_train[0].shape[1]
         x = Input((input_dim,))
         reg = lambda: l1l2(1e-7, 1e-7)
-        nch = 256
+        nch = 512
         h = Dense(nch, W_regularizer=reg())(x)
         h = LeakyReLU(0.2)(h)
         h = Dense(nch/2, W_regularizer=reg())(h)

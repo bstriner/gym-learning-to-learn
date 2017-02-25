@@ -3,7 +3,7 @@ from ..utils.np_utils import split_dataset
 import itertools
 
 
-def load_data(n_train=32 * 50, n_val=32*10, n_test=32*10):
+def load_data(n_train=32 * 25, n_val=32*5, n_test=32*5):
     # input_dim = np.random.randint(5, 10)
     input_dim = 10
     max_power = 3
