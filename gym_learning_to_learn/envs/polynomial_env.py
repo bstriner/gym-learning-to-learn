@@ -19,13 +19,14 @@ class PolynomialEnv(BaseEnv):
             self.data_train, self.data_val, self.data_test = polynomial.load_data()
         input_dim = self.data_train[0].shape[1]
         x = Input((input_dim,))
-        reg = lambda: l1l2(1e-7, 1e-7)
-        nch = 512
+        #reg = lambda: l1l2(1e-7, 1e-7)
+        reg = lambda: None
+        nch = 256
         h = Dense(nch, W_regularizer=reg())(x)
         h = LeakyReLU(0.2)(h)
-        h = Dense(nch/2, W_regularizer=reg())(h)
+        h = Dense(nch, W_regularizer=reg())(h)
         h = LeakyReLU(0.2)(h)
-        h = Dense(nch/4, W_regularizer=reg())(h)
+        h = Dense(nch, W_regularizer=reg())(h)
         h = LeakyReLU(0.2)(h)
         y = Dense(self.output_dim, W_regularizer=reg())(h)
         self.model = Model(x, y)
